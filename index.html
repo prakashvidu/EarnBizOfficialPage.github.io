@@ -15,174 +15,288 @@
             --border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
         }
-        body.light-mode { --bg: #f1f5f9; --card-bg: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --text: #0f172a; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        body.light-mode {
+            --bg: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border: rgba(0, 0, 0, 0.1);
+            --text: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 var(--primary-glow); } 70% { box-shadow: 0 0 0 15px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .fade-in { animation: slideUp 0.6s ease-out forwards; }
+
+        #loader { position: fixed; inset: 0; background: #020617; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .container { padding: 20px; max-width: 450px; margin: auto; padding-bottom: 120px; }
+
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
-        .logo { font-weight: 800; font-size: 28px; }
-        .logo span { color: var(--primary); }
+        .logo { font-weight: 800; font-size: 28px; letter-spacing: -1px; }
+        .logo span { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
+
+        .vip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .vip-card { 
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 25px 15px; 
+            text-align: center; transition: 0.3s ease; position: relative; overflow: hidden; cursor: pointer;
+        }
+        .vip-card:active { transform: scale(0.95); }
+        .vip-card b { color: var(--primary); font-size: 16px; display: block; margin-bottom: 5px; }
+        .vip-card .price { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .vip-card .daily { font-size: 11px; opacity: 0.7; font-weight: 600; }
+
         .glass-card { background: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 15px; }
-        .wallet-card { background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid var(--primary); text-align: center; padding: 40px 20px; }
-        #disp-bal { font-size: 40px; font-weight: 800; margin: 10px 0; }
-        .vip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .vip-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; }
-        .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--primary); color: #000; font-weight: 800; cursor: pointer; }
-        nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); padding: 15px; display: flex; justify-content: space-around; border-radius: 30px; }
-        .nav-item { color: #64748b; font-size: 12px; text-align: center; cursor: pointer; }
-        .nav-item.active { color: var(--primary); }
+        .wallet-card { 
+            background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid rgba(0, 255, 136, 0.3); 
+            text-align: center; padding: 40px 20px; animation: pulseGlow 3s infinite;
+        }
+        #disp-bal { font-size: 46px; font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
+
+        .pin-overlay { position: fixed; inset: 0; background: #020617; z-index: 20000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .pin-box { text-align: center; width: 85%; }
+        .pin-input { background: rgba(255,255,255,0.05); border: 1px solid var(--primary); padding: 18px; border-radius: 20px; width: 100%; color: white; font-size: 28px; text-align: center; letter-spacing: 12px; margin: 25px 0; outline: none; }
+
+        .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: linear-gradient(45deg, #008f51, #00ff88); color: #020617; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.97); }
+
+        nav { 
+            position: fixed; bottom: 25px; left: 20px; right: 20px; background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(20px); padding: 12px; display: flex; justify-content: space-around; 
+            border-radius: 35px; border: 1px solid var(--border); z-index: 1000;
+        }
+        .nav-item { color: #64748b; font-size: 11px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); font-weight: 800; transform: translateY(-5px); }
+        .nav-icon { font-size: 22px; margin-bottom: 4px; display: block; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 15000; padding: 25px; }
+        .modal-card { background: #0f172a; border: 1px solid var(--border); border-radius: 32px; width: 100%; max-width: 400px; padding: 35px; text-align: center; position: relative; }
+
         .hidden { display: none; }
-        #loader { position: fixed; inset: 0; background: #020617; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; }
     </style>
 </head>
 <body>
 
-<div id="loader">LOADING DATA...</div>
+<div id="pin-screen" class="pin-overlay">
+    <div class="pin-box">
+        <div class="logo">EARN<span>BIZ</span></div>
+        <h3 style="margin-top: 20px; color: white;">Unlock Wallet</h3>
+        <input type="password" id="entry-pin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="����">
+        <button class="btn" onclick="verifyPin()">UNLOCK ACCESS</button>
+    </div>
+</div>
+
+<div id="loader">
+    <div class="logo">EARN<span>BIZ</span></div>
+    <div style="font-size: 10px; opacity: 0.5; color: white; letter-spacing: 4px; margin-top: 15px;">SYNCING WITH FIREBASE...</div>
+</div>
 
 <div class="container">
-    <div id="home-view" class="page">
+    <div id="home-view" class="page fade-in">
         <div class="header">
             <div class="logo">EARN<span>BIZ</span></div>
+            <button class="btn" onclick="toggleTheme()" style="width: 45px; height: 45px; padding: 0; border-radius: 12px; background: var(--card-bg); color: var(--primary); border: 1px solid var(--border);">
+                <i id="theme-icon" class="fas fa-moon"></i>
+            </button>
         </div>
+
+        <div id="bonus-notice" class="glass-card" style="border-left: 5px solid #ffd700; background: rgba(255, 215, 0, 0.1); display: none; align-items: center; justify-content: space-between;">
+            <div>
+                <b style="font-size: 15px; display: block;">Welcome Bonus! ??</b>
+                <span style="font-size: 11px; opacity: 0.8;">Claim your Rs. 100.00 reward.</span>
+            </div>
+            <button onclick="claimBonus()" style="background:#ffd700; color:#000; border:none; padding:10px 18px; border-radius:15px; font-weight:800; font-size:12px; cursor:pointer;">CLAIM</button>
+        </div>
+
         <div class="glass-card wallet-card">
-            <small>AVAILABLE BALANCE</small>
+            <small style="opacity:0.6; letter-spacing:3px; font-weight:700;">TOTAL BALANCE</small>
             <h1 id="disp-bal">Rs. 0.00</h1>
         </div>
-        <div class="glass-card" style="text-align: center;">
-            <small>MINING PROFIT</small>
-            <h2 id="disp-profit" style="color: var(--primary);">Rs. 0.0000</h2>
-            <div id="miner-status" style="font-size: 12px; margin-top: 10px; opacity: 0.6;">No Active Miner</div>
+
+        <div class="glass-card" style="text-align:center; border: 1px solid rgba(0,255,136,0.2); animation: float 4s ease-in-out infinite;">
+            <div id="mining-anim" class="hidden" style="margin-bottom:15px;">
+                <i class="fas fa-microchip fa-spin" style="color:var(--primary); font-size:35px;"></i>
+            </div>
+            <small style="opacity:0.5; font-size:10px; letter-spacing:1px;">PENDING MINING PROFIT</small>
+            <h2 id="disp-profit" style="color:var(--primary); font-size:32px; margin:5px 0;">Rs. 0.0000</h2>
+            <div id="active-miner-info" class="hidden" style="margin-top:10px; padding-top:10px; border-top: 1px solid rgba(255,255,255,0.05); font-size:13px;">
+                <span id="m-name" style="font-weight:800;">--</span> | <span id="m-daily" style="color:var(--primary);">Rs. 0.00</span>
+            </div>
+            <div id="idle-msg" style="opacity:0.4; font-size:12px;">Engine Idle. Activate a Miner.</div>
         </div>
     </div>
 
-    <div id="store-view" class="page hidden">
-        <h3 style="margin-bottom: 20px;">MINING STORE</h3>
+    <div id="store-view" class="page hidden fade-in">
+        <h3 style="text-align:center; margin-bottom:20px;">MINING PACKAGES</h3>
         <div class="vip-grid" id="vip-list"></div>
     </div>
 
-    <div id="payout-view" class="page hidden">
-        <h3>WITHDRAW</h3>
+    <div id="payout-view" class="page hidden fade-in">
+        <h3 style="text-align:center; margin-bottom:20px;">WITHDRAW FUNDS</h3>
         <div class="glass-card">
-            <input type="number" id="w-amt" placeholder="Amount" style="width:100%; padding:10px; margin-bottom:10px;">
-            <input type="text" id="w-method" placeholder="Bank/Binance Details" style="width:100%; padding:10px; margin-bottom:10px;">
-            <button class="btn" onclick="requestWithdrawal()">SUBMIT</button>
+            <input type="number" id="w-amt" class="pin-input" style="font-size:20px; margin:10px 0;" placeholder="Amount Rs.">
+            <input type="text" id="w-wallet" class="pin-input" style="font-size:16px; margin:10px 0; letter-spacing:0;" placeholder="Wallet ID / Bank Details">
+            <button class="btn" onclick="handleWithdraw()">SUBMIT REQUEST</button>
         </div>
+        <div id="history-list"></div>
+    </div>
+
+    <div id="profile-view" class="page hidden fade-in">
+        <div style="text-align:center; padding:30px 20px;">
+            <h3 id="u-name">Premium Member</h3>
+            <p id="u-id-display" style="opacity:0.5; font-size:12px;">ID: EB-0000</p>
+        </div>
+        <button class="btn" onclick="toggleModal(true)" style="margin-bottom:12px;"><i class="fas fa-wallet"></i> DEPOSIT FUNDS</button>
+        <button class="btn" style="background:transparent; border:1px solid #ef4444; color:#ef4444;" onclick="location.reload()">LOGOUT</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="dep-modal">
+    <div class="modal-card">
+        <span style="position:absolute; right:20px; top:20px; font-size:24px; cursor:pointer;" onclick="toggleModal(false)">�</span>
+        <h2>Deposit Funds</h2>
+        <p style="margin:20px 0; font-size:14px; opacity:0.8;">Contact official agent to deposit.</p>
+        <a href="https://t.me/EarnBiz_Cash_Agent_Official" target="_blank" class="btn" style="text-decoration:none; display:block;">Contact Agent</a>
     </div>
 </div>
 
 <nav>
-    <div class="nav-item active" onclick="showPage('home-view', this)">Home</div>
-    <div class="nav-item" onclick="showPage('store-view', this)">Store</div>
-    <div class="nav-item" onclick="showPage('payout-view', this)">Payout</div>
+    <div class="nav-item active" onclick="showPage('home-view', this)"><span class="nav-icon"><i class="fas fa-home"></i></span>Home</div>
+    <div class="nav-item" onclick="showPage('store-view', this)"><span class="nav-icon"><i class="fas fa-bolt"></i></span>Store</div>
+    <div class="nav-item" onclick="showPage('payout-view', this)"><span class="nav-icon"><i class="fas fa-coins"></i></span>Payout</div>
+    <div class="nav-item" onclick="showPage('profile-view', this)"><span class="nav-icon"><i class="fas fa-circle-user"></i></span>Account</div>
 </nav>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyBP2F9mfmChbzKwbXxz_oiqN4dARJFUAvU",
-        authDomain: "earnoff-1781d.firebaseapp.com",
-        projectId: "earnoff-1781d",
-        storageBucket: "earnoff-1781d.firebasestorage.app",
-        messagingSenderId: "506084311845",
-        appId: "1:506084311845:web:80809232bb08c2851410cc"
+        apiKey: "AIzaSyC16gR_4yolV_TlJj6LLUhQAWSq6QSJVss",
+        authDomain: "earnbizmoney-35127.firebaseapp.com",
+        projectId: "earnbizmoney-35127",
+        storageBucket: "earnbizmoney-35127.firebasestorage.app",
+        messagingSenderId: "204252710394",
+        appId: "1:204252710394:web:7ffdd6c1ca447805751043",
+        measurementId: "G-DD1JJY174S"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
 
-    // User ID (In a real app, use Firebase Auth. Here we use a fixed ID for demo or LocalStorage)
-    const userId = localStorage.getItem('eb_userid') || "USER_" + Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('eb_userid', userId);
+    // App State
+    let userId = localStorage.getItem('eb_user_id') || "EB-" + Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('eb_user_id', userId);
 
-    let userData = { balance: 0, dailyRate: 0, lastUpdate: Date.now() };
+    let state = {
+        mainBalance: 0,
+        miningProfit: 0,
+        dailyRate: 0,
+        activeMiner: null,
+        history: []
+    };
 
-    // Initial Load & Sync
-    async function init() {
-        const userRef = doc(db, "users", userId);
-        const snap = await getDoc(userRef);
+    const plans = [{id:0,name:"VIP 0",price:100,daily:10},{id:1,name:"VIP 1",price:500,daily:45},{id:2,name:"VIP 2",price:1000,daily:95},{id:3,name:"VIP 3",price:1500,daily:145},{id:4,name:"VIP 4",price:2000,daily:200},{id:5,name:"VIP 5",price:2500,daily:265},{id:6,name:"VIP 6",price:3000,daily:330},{id:7,name:"VIP 7",price:4000,daily:460},{id:8,name:"VIP 8",price:5000,daily:600},{id:9,name:"VIP 9",price:6000,daily:740},{id:10,name:"VIP 10",price:7000,daily:880},{id:11,name:"VIP 11",price:8000,daily:1020},{id:12,name:"VIP 12",price:8500,daily:1100},{id:13,name:"VIP 13",price:9000,daily:1250},{id:14,name:"VIP 14",price:9500,daily:1380},{id:15,name:"VIP 15",price:10000,daily:1550}];
 
-        if (!snap.exists()) {
-            await setDoc(userRef, userData);
+    // Connect to Firebase and Load Data
+    const userRef = ref(db, 'users/' + userId);
+    get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            state = snapshot.val();
+        } else {
+            set(userRef, state);
         }
+        initApp();
+    });
 
-        onSnapshot(userRef, (doc) => {
-            userData = doc.data();
-            updateUI();
-        });
-
+    function initApp() {
+        document.getElementById('u-id-display').innerText = "ID: " + userId;
         document.getElementById('loader').style.display = 'none';
+        if(!localStorage.getItem('eb_v25_bonus')) document.getElementById('bonus-notice').style.display = 'flex';
+        
         renderVIPs();
-        startMiningEngine();
-    }
-
-    function updateUI() {
-        document.getElementById('disp-bal').innerText = "Rs. " + userData.balance.toFixed(2);
-        if(userData.dailyRate > 0) {
-            document.getElementById('miner-status').innerText = "Active Mining @ Rs." + userData.dailyRate + "/day";
-        }
-    }
-
-    function startMiningEngine() {
-        setInterval(async () => {
-            if (userData.dailyRate > 0) {
-                let increment = userData.dailyRate / 86400;
-                userData.balance += increment;
-                document.getElementById('disp-profit').innerText = "Rs. " + (userData.balance % 1).toFixed(4);
-                // Sync to DB every 30 seconds to save quota
+        updateUI();
+        
+        // Mining Logic
+        setInterval(() => {
+            if(state.dailyRate > 0) {
+                state.miningProfit += (state.dailyRate / 86400);
+                updateUI();
+                // Auto-save to Firebase every 10 seconds
+                if(Math.floor(Date.now()/1000) % 10 === 0) saveToFirebase();
             }
         }, 1000);
-        
-        // Auto-save balance to Firebase every 10 seconds
-        setInterval(() => {
-            updateDoc(doc(db, "users", userId), { balance: userData.balance });
-        }, 10000);
     }
 
-    const plans = [
-        {name: "VIP 1", price: 500, daily: 45},
-        {name: "VIP 2", price: 1000, daily: 95},
-        {name: "VIP 5", price: 2500, daily: 265}
-    ];
+    async function saveToFirebase() {
+        await update(userRef, state);
+    }
+
+    // Global Functions (Exposed to window for onclick)
+    window.updateUI = function() {
+        document.getElementById('disp-bal').innerText = "Rs. " + state.mainBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('disp-profit').innerText = "Rs. " + state.miningProfit.toFixed(4);
+        if(state.dailyRate > 0) {
+            document.getElementById('mining-anim').classList.remove('hidden');
+            document.getElementById('active-miner-info').classList.remove('hidden');
+            document.getElementById('idle-msg').classList.add('hidden');
+            document.getElementById('m-name').innerText = state.activeMiner?.name || "Active Miner";
+            document.getElementById('m-daily').innerText = "Rs. " + state.dailyRate + ".00";
+        }
+    }
+
+    window.claimBonus = function() {
+        state.mainBalance += 100;
+        localStorage.setItem('eb_v25_bonus', 'true');
+        document.getElementById('bonus-notice').style.display = 'none';
+        saveToFirebase();
+        updateUI();
+        alert("Rs. 100.00 Welcome Bonus Claimed!");
+    }
+
+    window.buyPlan = function(id) {
+        let p = plans.find(x => x.id === id);
+        if(state.mainBalance >= p.price) {
+            state.mainBalance -= p.price;
+            state.dailyRate += p.daily;
+            state.activeMiner = p;
+            saveToFirebase();
+            updateUI();
+            alert(`${p.name} Activated!`);
+        } else alert("Insufficient Balance!");
+    }
+
+    window.handleWithdraw = function() {
+        let a = parseFloat(document.getElementById('w-amt').value);
+        if(a >= 50 && state.mainBalance >= a) {
+            state.mainBalance -= a;
+            if(!state.history) state.history = [];
+            state.history.unshift({id: "TX-"+Math.floor(Math.random()*900000), amount: a, status: 'Pending', date: new Date().toLocaleTimeString()});
+            saveToFirebase();
+            renderHistory();
+            updateUI();
+            alert("Request Submitted!");
+        } else alert("Min Rs. 50 required!");
+    }
+
+    window.renderHistory = function() {
+        if(!state.history) return;
+        document.getElementById('history-list').innerHTML = state.history.map(h => `
+            <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                <div><b>Rs. ${h.amount}</b><br><small style="font-size:10px; opacity:0.5;">${h.date}</small></div>
+                <span style="color:#f59e0b; font-size:11px; font-weight:800;">PENDING</span>
+            </div>`).join('');
+    }
 
     window.renderVIPs = function() {
-        const list = document.getElementById('vip-list');
-        list.innerHTML = plans.map((p, i) => `
-            <div class="vip-card" onclick="buyPlan(${i})">
-                <b>${p.name}</b><br>Rs. ${p.price}<br>
-                <small>Daily: ${p.daily}</small>
-            </div>
-        `).join('');
-    }
-
-    window.buyPlan = async function(index) {
-        const p = plans[index];
-        if (userData.balance >= p.price) {
-            await updateDoc(doc(db, "users", userId), {
-                balance: userData.balance - p.price,
-                dailyRate: userData.dailyRate + p.daily
-            });
-            alert("Plan Activated!");
-        } else {
-            alert("Insufficient Balance!");
-        }
-    }
-
-    window.requestWithdrawal = async function() {
-        const amt = parseFloat(document.getElementById('w-amt').value);
-        const method = document.getElementById('w-method').value;
-        if(amt <= userData.balance && amt >= 50) {
-            await addDoc(collection(db, "withdrawals"), {
-                userId: userId,
-                amount: amt,
-                method: method,
-                status: "Pending",
-                date: new Date().toISOString()
-            });
-            await updateDoc(doc(db, "users", userId), { balance: userData.balance - amt });
-            alert("Withdrawal Requested!");
-        }
+        document.getElementById('vip-list').innerHTML = plans.map(p => `
+            <div class="vip-card" onclick="buyPlan(${p.id})">
+                <b>${p.name}</b>
+                <div class="price">Rs. ${p.price}</div>
+                <div class="daily">Daily Profit: Rs. ${p.daily}</div>
+            </div>`).join('');
     }
 
     window.showPage = function(id, el) {
@@ -190,9 +304,22 @@
         document.getElementById(id).classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         el.classList.add('active');
+        if(id === 'payout-view') renderHistory();
     }
 
-    init();
+    window.toggleTheme = function() {
+        document.body.classList.toggle('light-mode');
+        document.getElementById('theme-icon').className = document.body.classList.contains('light-mode') ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    window.toggleModal = function(show) {
+        document.getElementById('dep-modal').style.display = show ? 'flex' : 'none';
+    }
+
+    window.verifyPin = function() {
+        // Simple mock for this demo
+        document.getElementById('pin-screen').style.display = 'none';
+    }
 </script>
 </body>
 </html>
