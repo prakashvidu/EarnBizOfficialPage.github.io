@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earn Biz | Official V25 Ultra Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ff88; 
+            --primary-glow: rgba(0, 255, 136, 0.4);
+            --bg: #020617;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+        }
+        body.light-mode { --bg: #f1f5f9; --card-bg: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --text: #0f172a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        .container { padding: 20px; max-width: 450px; margin: auto; padding-bottom: 120px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+        .logo { font-weight: 800; font-size: 28px; }
+        .logo span { color: var(--primary); }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 28px; padding: 20px; margin-bottom: 15px; }
+        .wallet-card { background: linear-gradient(135deg, #0f172a 0%, #020617 100%); border: 1px solid var(--primary); text-align: center; padding: 40px 20px; }
+        #disp-bal { font-size: 40px; font-weight: 800; margin: 10px 0; }
+        .vip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .vip-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; }
+        .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--primary); color: #000; font-weight: 800; cursor: pointer; }
+        nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); padding: 15px; display: flex; justify-content: space-around; border-radius: 30px; }
+        .nav-item { color: #64748b; font-size: 12px; text-align: center; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .hidden { display: none; }
+        #loader { position: fixed; inset: 0; background: #020617; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; }
+    </style>
+</head>
+<body>
+
+<div id="loader">LOADING DATA...</div>
+
+<div class="container">
+    <div id="home-view" class="page">
+        <div class="header">
+            <div class="logo">EARN<span>BIZ</span></div>
+        </div>
+        <div class="glass-card wallet-card">
+            <small>AVAILABLE BALANCE</small>
+            <h1 id="disp-bal">Rs. 0.00</h1>
+        </div>
+        <div class="glass-card" style="text-align: center;">
+            <small>MINING PROFIT</small>
+            <h2 id="disp-profit" style="color: var(--primary);">Rs. 0.0000</h2>
+            <div id="miner-status" style="font-size: 12px; margin-top: 10px; opacity: 0.6;">No Active Miner</div>
+        </div>
+    </div>
+
+    <div id="store-view" class="page hidden">
+        <h3 style="margin-bottom: 20px;">MINING STORE</h3>
+        <div class="vip-grid" id="vip-list"></div>
+    </div>
+
+    <div id="payout-view" class="page hidden">
+        <h3>WITHDRAW</h3>
+        <div class="glass-card">
+            <input type="number" id="w-amt" placeholder="Amount" style="width:100%; padding:10px; margin-bottom:10px;">
+            <input type="text" id="w-method" placeholder="Bank/Binance Details" style="width:100%; padding:10px; margin-bottom:10px;">
+            <button class="btn" onclick="requestWithdrawal()">SUBMIT</button>
+        </div>
+    </div>
+</div>
+
+<nav>
+    <div class="nav-item active" onclick="showPage('home-view', this)">Home</div>
+    <div class="nav-item" onclick="showPage('store-view', this)">Store</div>
+    <div class="nav-item" onclick="showPage('payout-view', this)">Payout</div>
+</nav>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBP2F9mfmChbzKwbXxz_oiqN4dARJFUAvU",
+        authDomain: "earnoff-1781d.firebaseapp.com",
+        projectId: "earnoff-1781d",
+        storageBucket: "earnoff-1781d.firebasestorage.app",
+        messagingSenderId: "506084311845",
+        appId: "1:506084311845:web:80809232bb08c2851410cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // User ID (In a real app, use Firebase Auth. Here we use a fixed ID for demo or LocalStorage)
+    const userId = localStorage.getItem('eb_userid') || "USER_" + Math.floor(1000 + Math.random() * 9000);
+    localStorage.setItem('eb_userid', userId);
+
+    let userData = { balance: 0, dailyRate: 0, lastUpdate: Date.now() };
+
+    // Initial Load & Sync
+    async function init() {
+        const userRef = doc(db, "users", userId);
+        const snap = await getDoc(userRef);
+
+        if (!snap.exists()) {
+            await setDoc(userRef, userData);
+        }
+
+        onSnapshot(userRef, (doc) => {
+            userData = doc.data();
+            updateUI();
+        });
+
+        document.getElementById('loader').style.display = 'none';
+        renderVIPs();
+        startMiningEngine();
+    }
+
+    function updateUI() {
+        document.getElementById('disp-bal').innerText = "Rs. " + userData.balance.toFixed(2);
+        if(userData.dailyRate > 0) {
+            document.getElementById('miner-status').innerText = "Active Mining @ Rs." + userData.dailyRate + "/day";
+        }
+    }
+
+    function startMiningEngine() {
+        setInterval(async () => {
+            if (userData.dailyRate > 0) {
+                let increment = userData.dailyRate / 86400;
+                userData.balance += increment;
+                document.getElementById('disp-profit').innerText = "Rs. " + (userData.balance % 1).toFixed(4);
+                // Sync to DB every 30 seconds to save quota
+            }
+        }, 1000);
+        
+        // Auto-save balance to Firebase every 10 seconds
+        setInterval(() => {
+            updateDoc(doc(db, "users", userId), { balance: userData.balance });
+        }, 10000);
+    }
+
+    const plans = [
+        {name: "VIP 1", price: 500, daily: 45},
+        {name: "VIP 2", price: 1000, daily: 95},
+        {name: "VIP 5", price: 2500, daily: 265}
+    ];
+
+    window.renderVIPs = function() {
+        const list = document.getElementById('vip-list');
+        list.innerHTML = plans.map((p, i) => `
+            <div class="vip-card" onclick="buyPlan(${i})">
+                <b>${p.name}</b><br>Rs. ${p.price}<br>
+                <small>Daily: ${p.daily}</small>
+            </div>
+        `).join('');
+    }
+
+    window.buyPlan = async function(index) {
+        const p = plans[index];
+        if (userData.balance >= p.price) {
+            await updateDoc(doc(db, "users", userId), {
+                balance: userData.balance - p.price,
+                dailyRate: userData.dailyRate + p.daily
+            });
+            alert("Plan Activated!");
+        } else {
+            alert("Insufficient Balance!");
+        }
+    }
+
+    window.requestWithdrawal = async function() {
+        const amt = parseFloat(document.getElementById('w-amt').value);
+        const method = document.getElementById('w-method').value;
+        if(amt <= userData.balance && amt >= 50) {
+            await addDoc(collection(db, "withdrawals"), {
+                userId: userId,
+                amount: amt,
+                method: method,
+                status: "Pending",
+                date: new Date().toISOString()
+            });
+            await updateDoc(doc(db, "users", userId), { balance: userData.balance - amt });
+            alert("Withdrawal Requested!");
+        }
+    }
+
+    window.showPage = function(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    init();
+</script>
+</body>
+</html>
